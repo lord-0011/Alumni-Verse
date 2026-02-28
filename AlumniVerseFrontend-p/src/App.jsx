@@ -1,0 +1,152 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
+
+// Import Pages
+import LandingPage from './pages/LandingPage';
+import AuthPage from './pages/AuthPage';
+import AuthSuccessPage from './pages/AuthSuccessPage';
+import AuthErrorPage from './pages/AuthErrorPage';
+import OnboardingForm from './pages/OnboardingForm';
+import HomePage from './pages/HomePage';
+import FeedPage from './pages/FeedPage';
+import JobsPage from './pages/JobsPage';
+import EventsPage from './pages/EventsPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import FindMentorPage from './pages/FindMentorPage';
+import MentorshipRequestsPage from './pages/MentorshipRequestsPage';
+import MyMentorshipsPage from './pages/MyMentorshipsPage';
+import ProfilePage from './pages/ProfilePage'; // <-- Import ProfilePage
+import ProfileEditPage from './pages/ProfileEditPage';
+import AddJobPage from './pages/AddJobPage';
+import StartupPage from './pages/StartupPage';
+import AddEventPage from './pages/AddEventPage';
+import SearchPage from './pages/SearchPage';
+import UserProfilePage from './pages/UserProfilePage';
+import JobDetailPage from './pages/JobDetailPage';
+import PostDetailPage from './pages/PostDetailPage';
+import AlumniDirectoryPage from './pages/AlumniDirectoryPage';
+import ConnectionsPage from './pages/ConnectionsPage';
+import MessagesPage from './pages/MessagesPage';
+
+// Import Components
+import MainLayout from './components/MainLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+
+function App() {
+  const [user, setUser] = useState(null);
+  const [userName, setUserName] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // On initial app load, check localStorage for existing session
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const name = localStorage.getItem('userName');
+    const role = localStorage.getItem('userRole');
+
+    if (token && name && role) {
+      setUser({ type: role });
+      setUserName(name);
+      
+      const lastVisitedPath = localStorage.getItem('lastVisitedPath');
+      if (lastVisitedPath) {
+        navigate(lastVisitedPath, { replace: true });
+      }
+    }
+  }, []);
+
+  // Every time the page changes, save the current path
+  useEffect(() => {
+    if (user && location.pathname !== '/landing' && !location.pathname.startsWith('/auth')) {
+      localStorage.setItem('lastVisitedPath', location.pathname);
+    }
+  }, [location, user]);
+
+   const handleLogin = (roleOrData, name, shouldNavigate = true) => {
+    // Handle both formats: (data) or (role, name)
+    if (typeof roleOrData === 'object') {
+      // Old format: handleLogin(data) where data = { role, name }
+      setUser({ type: roleOrData.role });
+      setUserName(roleOrData.name);
+    } else {
+      // New format: handleLogin(role, name)
+      setUser({ type: roleOrData });
+      setUserName(name);
+    }
+    // Only navigate if explicitly requested (for backward compatibility with traditional auth)
+    if (shouldNavigate) {
+      navigate('/home');
+    }
+  };
+
+  // ...
+
+const handleLogout = () => {
+    setUser(null);
+    setUserName('');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId'); // This line is essential
+    localStorage.removeItem('lastVisitedPath');
+    navigate('/landing');
+  };
+
+// ...
+
+  return (
+    <Routes>
+      <Route path="/landing" element={<LandingPage />} />
+      <Route path="/auth/:role" element={<AuthPage onLogin={handleLogin} />} />
+      <Route path="/auth/success" element={<AuthSuccessPage onLogin={handleLogin} />} />
+      <Route path="/auth/error" element={<AuthErrorPage />} />
+      <Route path="/onboarding/:role" element={<OnboardingForm onLogin={handleLogin} />} />
+
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute user={user}>
+            <MainLayout user={user} userName={userName} onLogout={handleLogout} />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/home" />} />
+        <Route path="home" element={<HomePage user={user} userName={userName} />} />
+        <Route path="feed" element={<FeedPage user={user} userName={userName} />} />
+        <Route path="jobs" element={<JobsPage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="startups" element={<StartupPage />} />
+        <Route path="leaderboard" element={<LeaderboardPage />} />
+        <Route path="mentors" element={<FindMentorPage />} />
+        <Route path="mentorship" element={<MentorshipRequestsPage />} />
+        <Route path="my-mentorships" element={<MyMentorshipsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="profile/edit" element={<ProfileEditPage />} />
+        <Route path="jobs/add" element={<AddJobPage />} />
+        <Route path="startups/add" element={<StartupPage />} /> 
+        <Route path="events/add" element={<AddEventPage />} />
+        <Route path="search" element={<SearchPage />} /> 
+        <Route path="profile/:id" element={<UserProfilePage />} />
+        <Route path="jobs/:id" element={<JobDetailPage />} />
+        <Route path="posts/:id" element={<PostDetailPage />} />
+        <Route path="alumni-directory" element={<AlumniDirectoryPage />} />
+        <Route path="connections" element={<ConnectionsPage />} />
+        <Route path="messages" element={<MessagesPage />} />
+
+
+      </Route>
+      
+      <Route path="*" element={<Navigate to={user ? "/home" : "/landing"} />} />
+    </Routes>
+  );
+}
+
+function AppWrapper() {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}
+
+export default AppWrapper;
