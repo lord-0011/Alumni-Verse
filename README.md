@@ -356,8 +356,20 @@ This project is licensed under the ISC License.
 
 ## 👨‍💻 Author
 
-**Soham (lord-0011)**
+**Priyanshu Kumar**
 - GitHub: [@lord-0011](https://github.com/lord-0011)
+
+// 💁‍♂️ Contributors
+
+**Kunal**
+- GitHub: [@lord-0011](https://github.com/lord-0011)
+
+**Navjot**
+- GitHub: [@lord-0011](https://github.com/lord-0011)
+
+**Soham**
+- GitHub: [@lord-0011](https://github.com/sohamactive)
+
 
 ## 🙏 Acknowledgments
 
@@ -368,4 +380,5 @@ This project is licensed under the ISC License.
 
 ---
 
-**Note**: This is an educational project for learning full-stack development with the MERN stack.
+
+**Note**: This is currently an educational project for learning full-stack development with the MERN stack, Can be in production in future
