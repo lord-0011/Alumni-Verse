@@ -29,6 +29,10 @@ connectDB();
 
 const app = express();
 
+// Trust proxy in production (needed for secure cookies behind reverse proxies)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 // 3. Create an HTTP server from the Express app
 const server = http.createServer(app);
@@ -57,12 +61,12 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || 'your-session-secret-key',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Must be true so passport can store OAuth state before redirect
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      httpOnly: true, // Prevent XSS attacks
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-site cookies for OAuth
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // 'lax' works for OAuth top-level redirects in both dev and prod
     },
   })
 );

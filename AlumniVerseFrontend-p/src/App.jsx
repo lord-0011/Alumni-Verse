@@ -35,6 +35,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 function App() {
   const [user, setUser] = useState(null);
   const [userName, setUserName] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -53,6 +54,7 @@ function App() {
         navigate(lastVisitedPath, { replace: true });
       }
     }
+    setIsInitialized(true);
   }, []);
 
   // Every time the page changes, save the current path
@@ -93,6 +95,11 @@ const handleLogout = () => {
   };
 
 // ...
+
+  // Show nothing until localStorage has been checked to prevent flash-redirect
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <Routes>
