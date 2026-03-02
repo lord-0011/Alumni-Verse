@@ -2,6 +2,8 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+
 // Function to generate a JSON Web Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -120,12 +122,12 @@ const googleAuthCallback = (req, res, next) => {
   passport.authenticate('google', { session: false }, (err, user, info) => {
     if (err) {
       console.error('Google OAuth Error:', err.message);
-      // Redirect to frontend with error
-      return res.redirect(`${process.env.FRONTEND_URL}/auth/error?message=${encodeURIComponent(err.message)}`);
+      return res.redirect(`${FRONTEND_URL}/auth/error?message=${encodeURIComponent(err.message)}`);
     }
 
     if (!user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/auth/error?message=Authentication failed`);
+      const msg = (info && info.message) || 'Authentication failed';
+      return res.redirect(`${FRONTEND_URL}/auth/error?message=${encodeURIComponent(msg)}`);
     }
 
     // Generate JWT token
@@ -134,11 +136,9 @@ const googleAuthCallback = (req, res, next) => {
     // Determine redirect based on onboarding status
     let redirectUrl;
     if (!user.isOnboarded) {
-      // New user or user who hasn't completed onboarding → go to onboarding
-      redirectUrl = `${process.env.FRONTEND_URL}/onboarding/${user.role}?token=${token}&userId=${user._id}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}`;
+      redirectUrl = `${FRONTEND_URL}/onboarding/${user.role}?token=${token}&userId=${user._id}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}`;
     } else {
-      // Existing user who completed onboarding → go to home
-      redirectUrl = `${process.env.FRONTEND_URL}/auth/success?token=${token}&userId=${user._id}&name=${encodeURIComponent(user.name)}&role=${user.role}&email=${encodeURIComponent(user.email)}&isOnboarded=true`;
+      redirectUrl = `${FRONTEND_URL}/auth/success?token=${token}&userId=${user._id}&name=${encodeURIComponent(user.name)}&role=${user.role}&email=${encodeURIComponent(user.email)}&isOnboarded=true`;
     }
 
     res.redirect(redirectUrl);

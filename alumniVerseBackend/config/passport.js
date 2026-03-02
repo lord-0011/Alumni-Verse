@@ -29,10 +29,11 @@ passport.use(
     async (req, accessToken, refreshToken, profile, done) => {
       try {
         // Extract role from state (passed during initial redirect)
-        const role = req.query.state;
+        // Try req.query.state first, then fall back to session
+        const role = req.query.state || (req.session && req.session.oauthRole);
 
-        if (!role) {
-          return done(new Error('Role not specified'), null);
+        if (!role || !['student', 'alumni'].includes(role)) {
+          return done(new Error('Valid role not specified. Please try again.'), null);
         }
 
         // Check if user already exists
